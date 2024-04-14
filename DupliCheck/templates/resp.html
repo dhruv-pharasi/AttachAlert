@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Images</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            background-color: #f2f2f2;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .image-caption {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .delete-button-container {
+            text-align: center;
+        }
+        .delete-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: red;
+            margin-top: 5px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-text {
+            color: #fff;
+            font-size: 24px;
+        }
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Duplicate Images</h1>
+
+    {% for data in image_data.values() %}
+        <div class="image-container">
+            <figure>
+                <img src="data:image/png;base64,{{ data[0] }}" alt="{{ data[2] }}">
+                <figcaption class="image-caption">{{ data[2] }}</figcaption>
+                <div class="delete-button-container">
+                    <button class="delete-button" onclick="deleteImage('{{ data[2] }}')">Delete <i class="fas fa-trash-alt"></i></button>
+                </div>
+            </figure>
+            <figure>
+                <img src="data:image/png;base64,{{ data[1] }}" alt="{{ data[3] }}">
+                <figcaption class="image-caption">{{ data[3] }}</figcaption>
+                <div class="delete-button-container">
+                    <button class="delete-button" onclick="deleteImage('{{ data[3] }}')">Delete <i class="fas fa-trash-alt"></i></button>
+                </div>
+            </figure>
+        </div>
+    {% endfor %}
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text">Loading...</div>
+    </div>
+
+    <script>
+        function deleteImage(imageName) {
+            if (confirm("Are you sure you want to delete " + imageName + "?")) {
+                // Show loading overlay
+                document.getElementById("loadingOverlay").style.display = "flex";
+
+                // Send AJAX request to Flask server to delete the image
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/delete_image", true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        // Image deleted successfully, reload the page to reflect changes
+                        location.reload();
+                    }
+                };
+                xhr.send(JSON.stringify({imageName: imageName}));
+            }
+        }
+    </script>
+</body>
+</html>
